@@ -19,7 +19,7 @@ public class Firstpersoncontroller : MonoBehaviour
     //CAmera 
     public Camera camera;
     public float sensitivity = 30;
-    public float cam_x_rotation = 0f;
+    private float cam_x_rotation = 0f; 
    
 
 
@@ -27,13 +27,18 @@ public class Firstpersoncontroller : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        
+        characterController = GetComponent<CharacterController>();
+        Cursor.lockState = CursorLockMode.Locked;
+
     }
 
     // Update is called once per frame
     void Update()
     {
-        
+        grounded = characterController.isGrounded;
+        MovePlayer();
+        Look();
+       
     }
 
 
@@ -47,6 +52,7 @@ public class Firstpersoncontroller : MonoBehaviour
     public void OnJump(InputAction.CallbackContext context)
     {
         //Debug.Log("Pressed the jump key");
+        Jump();
     }
 
     public void OnLook(InputAction.CallbackContext context)
@@ -55,6 +61,44 @@ public class Firstpersoncontroller : MonoBehaviour
        // Debug.Log("Muse movement: " + mouse_movement.ToString());
     }
 
+    public void MovePlayer()
+    {
+        //Move player
+        Vector3 move_vec = transform.right * move_imput.x +transform.forward * move_imput.y;
+        characterController.Move(move_vec * speed * Time.deltaTime);
+
+        //Player Gravity
+        player_velocity.y += gravity * Time.deltaTime;
+        if (grounded && player_velocity.y < 0)
+        {
+            player_velocity.y = -2;
+        }
+        characterController.Move(player_velocity * Time.deltaTime);
+    }
+
+        //Player look
+    public void Look()
+    {
+        float x_amount = mouse_movement.y * sensitivity * Time.deltaTime;
+        transform.Rotate(Vector3.up *mouse_movement.x *sensitivity *Time.deltaTime);
+
+        cam_x_rotation -= x_amount;
+        cam_x_rotation = Mathf.Clamp(cam_x_rotation, -90, 90);
+
+        camera.transform.localRotation = Quaternion.Euler(cam_x_rotation, 0, 0);
+
+    }
+
+    //jumpo
+    public void Jump()
+    {
+        if(grounded)
+        {
+            player_velocity.y = jump_force;
+
+        }
+
+    }
 
 
 }
